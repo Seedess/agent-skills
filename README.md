@@ -22,8 +22,11 @@ user-wide install instead of per-project.
 | Skill | What it does |
 | --- | --- |
 | [`seedess`](seedess/) | Creates a stream, hands the page a `pk_…` token, wires the player, verifies P2P and reads metrics. Covers every server SDK and every client library. |
+| [`seedess-blog`](seedess-blog/) | Writes Seedess blog posts for the engineer who owns the CDN bill: ICP, buying journey, buyer vocabulary, verified 2026 rates, the four levers, claim labels and the post contract. |
 
-## What is in the skill
+## What is in the skills
+
+**seedess**
 
 - `SKILL.md` — the end-to-end setup and operating flow.
 - `reference/openapi.json` — OpenAPI 3.1 for every endpoint.
@@ -34,6 +37,16 @@ user-wide install instead of per-project.
 - `reference/sdks.md` — Node, Python, Go, PHP, Java, Ruby, .NET, Rust and Elixir.
 - `reference/troubleshooting.md` — 0 P2P, CORS, TURN, kill switch.
 - `scripts/create-stream.mjs` — create a stream and print the handoff.
+
+**seedess-blog**
+
+- `SKILL.md` — the blog voice, reader moment, sequence and gates.
+- `references/icp-and-journey.md` — persona, triggers, search intent, objections.
+- `references/phrase-bank.md` — buyer phrases, competitor vocabulary, ten hero paragraphs.
+- `references/competitor-messaging.md` — how each vendor sells.
+- `references/evidence.md` — dated rates, ladder, benchmark results, claim labels.
+- `references/post-contract.md` — structure, diagram, CTA and claims gates.
+- `templates/brief.md` — the per-post brief template.
 
 ## Other ways to install
 
