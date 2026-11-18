@@ -8,6 +8,10 @@ description: Set up and operate Seedess peer-assisted video delivery end-to-end 
 Seedess makes viewers share the video segments they already watch. The CDN carries less, the
 bill drops, and the player stays the player — a plugin, not a migration.
 
+**Live docs:** [Quickstart](https://seedess.com/docs/quickstart/) ·
+[Libraries](https://seedess.com/docs/libraries/) · [Players](https://seedess.com/docs/players/) ·
+[API](https://seedess.com/docs/api/) · [OpenAPI](https://seedess.com/openapi.json)
+
 There are **two planes**, and the credential boundary is the most important rule:
 
 | Plane | Runs | Credential | What it does |
