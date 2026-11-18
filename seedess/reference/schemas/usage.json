@@ -1,0 +1,42 @@
+{
+  "$id": "https://schemas.seedess.com/usage.json",
+  "title": "Usage",
+  "type": "object",
+  "required": [
+    "ok",
+    "summary",
+    "streams"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "const": true
+    },
+    "summary": {
+      "$ref": "https://schemas.seedess.com/metrics.json"
+    },
+    "streams": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "metrics"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "metrics": {
+            "$ref": "https://schemas.seedess.com/metrics.json"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,23 @@
+{
+  "$id": "https://schemas.seedess.com/admin-invoices.json",
+  "title": "AdminInvoices",
+  "type": "object",
+  "required": [
+    "ok",
+    "invoices"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "const": true
+    },
+    "invoices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}

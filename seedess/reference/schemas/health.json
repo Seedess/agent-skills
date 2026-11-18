@@ -1,0 +1,19 @@
+{
+  "$id": "https://schemas.seedess.com/health.json",
+  "title": "Health",
+  "type": "object",
+  "required": [
+    "ok",
+    "service"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "const": true
+    },
+    "service": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,80 @@
+{
+  "$id": "https://schemas.seedess.com/metering.json",
+  "title": "Metering",
+  "type": "object",
+  "required": [
+    "summary"
+  ],
+  "properties": {
+    "period": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "from": {
+          "type": "string",
+          "description": "Inclusive day, YYYY-MM-DD."
+        },
+        "to": {
+          "type": "string",
+          "description": "Exclusive day, YYYY-MM-DD."
+        }
+      },
+      "additionalProperties": false
+    },
+    "baseline": {
+      "type": "object",
+      "properties": {
+        "egressRateUsdPerGb": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "billingPlan": {
+          "type": "string",
+          "enum": [
+            "savings_share",
+            "per_minute"
+          ]
+        },
+        "savingsSharePct": {
+          "type": "number"
+        },
+        "perMinuteRateUsd": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "feeShare": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string",
+          "const": "USD"
+        }
+      },
+      "additionalProperties": false
+    },
+    "summary": {
+      "$ref": "https://schemas.seedess.com/metrics.json"
+    },
+    "daily": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "streams": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}

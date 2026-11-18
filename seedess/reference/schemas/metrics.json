@@ -1,0 +1,61 @@
+{
+  "$id": "https://schemas.seedess.com/metrics.json",
+  "title": "Metrics",
+  "type": "object",
+  "required": [
+    "cdnBytes",
+    "p2pBytes",
+    "offloadPercent"
+  ],
+  "properties": {
+    "cdnBytes": {
+      "type": "integer",
+      "description": "Bytes served by the origin/CDN path."
+    },
+    "p2pBytes": {
+      "type": "integer",
+      "description": "Bytes served by peers and accepted after verification."
+    },
+    "offloadPercent": {
+      "type": "number",
+      "description": "p2pBytes / (cdnBytes + p2pBytes), as a percentage."
+    },
+    "hashFailures": {
+      "type": "integer"
+    },
+    "fallbacks": {
+      "type": "integer"
+    },
+    "rebuffers": {
+      "type": "integer"
+    },
+    "peakPeers": {
+      "type": "integer"
+    },
+    "sessions": {
+      "type": "integer"
+    },
+    "savingsUsd": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Offloaded bytes priced at the captured CDN rate. Present on metering responses."
+    },
+    "feeUsd": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Seedess savings-share fee. Present on metering responses."
+    },
+    "keepUsd": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Savings left with the customer after the fee. Present on metering responses."
+    }
+  },
+  "additionalProperties": false
+}

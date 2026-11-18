@@ -1,0 +1,29 @@
+{
+  "$id": "https://schemas.seedess.com/stream-create.json",
+  "title": "StreamCreate",
+  "type": "object",
+  "required": [
+    "url"
+  ],
+  "properties": {
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "The origin HLS master or media playlist URL. http(s) only; private addresses are refused."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,64}$",
+      "description": "Stable id, also the signaling room. Omit to generate `str_…`."
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 120
+    },
+    "live": {
+      "type": "boolean",
+      "description": "Treat the source as a live window."
+    }
+  },
+  "additionalProperties": false
+}

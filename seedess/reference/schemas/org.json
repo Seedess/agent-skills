@@ -1,0 +1,55 @@
+{
+  "$id": "https://schemas.seedess.com/org.json",
+  "title": "Organisation",
+  "type": "object",
+  "required": [
+    "id",
+    "name"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Organisation id (`ten_…`). Also the tenant id."
+    },
+    "name": {
+      "type": "string"
+    },
+    "plan": {
+      "type": "string",
+      "enum": [
+        "pilot",
+        "savings_share",
+        "per_minute"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended"
+      ]
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "owner",
+        "admin",
+        "member"
+      ],
+      "description": "The caller's role in this organisation, on list responses."
+    },
+    "myRole": {
+      "type": "string",
+      "enum": [
+        "owner",
+        "admin",
+        "member"
+      ],
+      "description": "The caller's role, on single-organisation responses."
+    },
+    "memberCount": {
+      "type": "integer"
+    }
+  },
+  "additionalProperties": true
+}

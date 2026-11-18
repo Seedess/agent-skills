@@ -1,0 +1,47 @@
+{
+  "$id": "https://schemas.seedess.com/stream-variant.json",
+  "title": "StreamVariant",
+  "type": "object",
+  "required": [
+    "variantId",
+    "kind",
+    "uri"
+  ],
+  "properties": {
+    "variantId": {
+      "type": "string",
+      "description": "Manifest index (`v0`, `v1`) or `audio_0` / `sub_0` for auxiliary tracks."
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "video",
+        "audio",
+        "subtitles"
+      ]
+    },
+    "uri": {
+      "type": "string",
+      "description": "Upstream media playlist URI."
+    },
+    "bandwidth": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "resolution": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "language": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

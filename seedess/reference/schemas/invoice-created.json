@@ -1,0 +1,50 @@
+{
+  "$id": "https://schemas.seedess.com/invoice-created.json",
+  "title": "InvoiceCreated",
+  "type": "object",
+  "required": [
+    "ok",
+    "invoice"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "const": true
+    },
+    "invoice": {
+      "$ref": "https://schemas.seedess.com/invoice.json"
+    },
+    "stripe": {
+      "type": "object",
+      "description": "Best-effort Stripe mirror. `connected:false` when the key is unset.",
+      "properties": {
+        "connected": {
+          "type": "boolean"
+        },
+        "invoiceId": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "hostedInvoiceUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "skipped": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "error": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

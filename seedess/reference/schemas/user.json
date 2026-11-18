@@ -1,0 +1,52 @@
+{
+  "$id": "https://schemas.seedess.com/user.json",
+  "title": "User",
+  "type": "object",
+  "required": [
+    "id",
+    "email"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Account id (`usr_…`)."
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "active",
+        "suspended"
+      ]
+    },
+    "emailVerified": {
+      "type": "boolean"
+    },
+    "authProvider": {
+      "type": "string",
+      "enum": [
+        "password",
+        "google",
+        "github",
+        "email"
+      ]
+    },
+    "applicationCompletedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "createdAt": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

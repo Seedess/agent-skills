@@ -1,0 +1,22 @@
+{
+  "$id": "https://schemas.seedess.com/stream-list.json",
+  "title": "StreamList",
+  "type": "object",
+  "required": [
+    "ok",
+    "streams"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "const": true
+    },
+    "streams": {
+      "type": "array",
+      "items": {
+        "$ref": "https://schemas.seedess.com/stream.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

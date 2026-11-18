@@ -1,0 +1,23 @@
+{
+  "$id": "https://schemas.seedess.com/stream-metrics.json",
+  "title": "StreamMetrics",
+  "type": "object",
+  "required": [
+    "ok",
+    "id",
+    "metrics"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "const": true
+    },
+    "id": {
+      "type": "string"
+    },
+    "metrics": {
+      "$ref": "https://schemas.seedess.com/metrics.json"
+    }
+  },
+  "additionalProperties": false
+}

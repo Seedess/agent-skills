@@ -1,0 +1,32 @@
+{
+  "$id": "https://schemas.seedess.com/controls.json",
+  "title": "StreamControls",
+  "type": "object",
+  "properties": {
+    "killSwitch": {
+      "type": "boolean"
+    },
+    "offloadCap": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Maximum share of traffic peers may serve. Null means uncapped."
+    },
+    "allowedOrigins": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uri"
+      },
+      "description": "Browser origins allowed to use the public token. Empty means any origin."
+    },
+    "meteredDefault": {
+      "type": "boolean",
+      "description": "Prefer the CDN on connections the browser reports as metered."
+    }
+  },
+  "additionalProperties": false
+}

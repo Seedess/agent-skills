@@ -1,0 +1,22 @@
+{
+  "$id": "https://schemas.seedess.com/invoice-list.json",
+  "title": "InvoiceList",
+  "type": "object",
+  "required": [
+    "ok",
+    "invoices"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "const": true
+    },
+    "invoices": {
+      "type": "array",
+      "items": {
+        "$ref": "https://schemas.seedess.com/invoice.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

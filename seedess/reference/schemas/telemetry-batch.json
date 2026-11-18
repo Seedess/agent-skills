@@ -1,0 +1,43 @@
+{
+  "$id": "https://schemas.seedess.com/telemetry-batch.json",
+  "title": "TelemetryBatch",
+  "type": "object",
+  "required": [
+    "sessionId",
+    "streamId"
+  ],
+  "properties": {
+    "sessionId": {
+      "type": "string",
+      "description": "Random id generated once per playback session. The server counts a session on first sight."
+    },
+    "streamId": {
+      "type": "string"
+    },
+    "cdnBytes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "p2pBytes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "hashFailures": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "fallbacks": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rebuffers": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "peakPeers": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "additionalProperties": true
+}

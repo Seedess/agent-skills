@@ -1,0 +1,60 @@
+{
+  "$id": "https://schemas.seedess.com/stream-create-response.json",
+  "title": "StreamCreateResponse",
+  "type": "object",
+  "required": [
+    "ok",
+    "id",
+    "publicToken",
+    "playback"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "const": true
+    },
+    "id": {
+      "type": "string"
+    },
+    "live": {
+      "type": "boolean"
+    },
+    "master": {
+      "type": "boolean",
+      "description": "True when the source was a multi-variant master."
+    },
+    "targetDuration": {
+      "type": "number"
+    },
+    "mediaSequence": {
+      "type": "integer"
+    },
+    "variants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "addedSegments": {
+      "type": "integer"
+    },
+    "skippedSegments": {
+      "type": "integer"
+    },
+    "totalSegments": {
+      "type": "integer"
+    },
+    "init": {
+      "type": "boolean"
+    },
+    "publicToken": {
+      "type": "string",
+      "description": "Read-only browser token (`pk_…`). Safe to put in page source."
+    },
+    "playback": {
+      "$ref": "https://schemas.seedess.com/playback.json"
+    }
+  },
+  "additionalProperties": true
+}

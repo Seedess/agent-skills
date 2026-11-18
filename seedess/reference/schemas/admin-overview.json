@@ -1,0 +1,45 @@
+{
+  "$id": "https://schemas.seedess.com/admin-overview.json",
+  "title": "AdminOverview",
+  "type": "object",
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "const": true
+    },
+    "health": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "service": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "counts": {
+      "type": "object",
+      "properties": {
+        "tenants": {
+          "type": "integer"
+        },
+        "users": {
+          "type": "integer"
+        },
+        "streams": {
+          "type": "integer"
+        },
+        "metricBuckets": {
+          "type": "integer"
+        },
+        "applications": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

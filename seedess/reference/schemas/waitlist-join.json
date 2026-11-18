@@ -1,0 +1,21 @@
+{
+  "$id": "https://schemas.seedess.com/waitlist-join.json",
+  "title": "WaitlistJoin",
+  "type": "object",
+  "required": [
+    "ok"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "const": true
+    },
+    "alreadySubscribed": {
+      "type": "boolean"
+    },
+    "count": {
+      "type": "integer"
+    }
+  },
+  "additionalProperties": false
+}

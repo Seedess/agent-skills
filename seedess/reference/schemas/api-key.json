@@ -1,0 +1,23 @@
+{
+  "$id": "https://schemas.seedess.com/api-key.json",
+  "title": "ApiKey",
+  "type": "object",
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "const": true
+    },
+    "id": {
+      "type": "string",
+      "description": "Key id (`key_…`)."
+    },
+    "name": {
+      "type": "string"
+    },
+    "apiKey": {
+      "type": "string",
+      "description": "The raw secret (`key_…`). Returned once and never stored in plain text."
+    }
+  },
+  "additionalProperties": false
+}

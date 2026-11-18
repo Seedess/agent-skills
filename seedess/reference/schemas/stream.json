@@ -1,0 +1,71 @@
+{
+  "$id": "https://schemas.seedess.com/stream.json",
+  "title": "Stream",
+  "type": "object",
+  "required": [
+    "id",
+    "status"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Stream id, also the signaling room name."
+    },
+    "title": {
+      "type": "string"
+    },
+    "live": {
+      "type": "boolean"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "killed"
+      ]
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "hls",
+        "dash"
+      ]
+    },
+    "killSwitch": {
+      "type": "boolean",
+      "description": "When true the CDN carries every byte."
+    },
+    "targetDuration": {
+      "type": "number"
+    },
+    "mediaSequence": {
+      "type": "integer"
+    },
+    "variants": {
+      "type": "array",
+      "items": {
+        "$ref": "https://schemas.seedess.com/stream-variant.json"
+      }
+    },
+    "segments": {
+      "type": "integer"
+    },
+    "updatedAt": {
+      "type": "string"
+    },
+    "playback": {
+      "$ref": "https://schemas.seedess.com/playback.json"
+    },
+    "snippet": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Copy-paste hls.js integration. Null when there is no shipped SDK for the format."
+    },
+    "controls": {
+      "$ref": "https://schemas.seedess.com/controls.json"
+    }
+  },
+  "additionalProperties": false
+}

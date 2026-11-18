@@ -1,0 +1,36 @@
+{
+  "$id": "https://schemas.seedess.com/admin-applications.json",
+  "title": "AdminApplications",
+  "type": "object",
+  "required": [
+    "ok",
+    "applications",
+    "total"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "const": true
+    },
+    "applications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "total": {
+      "type": "integer"
+    },
+    "limit": {
+      "type": "integer"
+    },
+    "offset": {
+      "type": "integer"
+    },
+    "hasMore": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

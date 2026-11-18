@@ -1,0 +1,41 @@
+{
+  "$id": "https://schemas.seedess.com/session.json",
+  "title": "Session",
+  "type": "object",
+  "required": [
+    "user"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "const": true
+    },
+    "user": {
+      "$ref": "https://schemas.seedess.com/user.json"
+    },
+    "orgs": {
+      "type": "array",
+      "items": {
+        "$ref": "https://schemas.seedess.com/org.json"
+      }
+    },
+    "requiresVerification": {
+      "type": "boolean"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "active",
+        "suspended"
+      ]
+    },
+    "approved": {
+      "type": "boolean"
+    },
+    "isAdmin": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

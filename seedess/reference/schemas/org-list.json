@@ -1,0 +1,22 @@
+{
+  "$id": "https://schemas.seedess.com/org-list.json",
+  "title": "OrgList",
+  "type": "object",
+  "required": [
+    "ok",
+    "orgs"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "const": true
+    },
+    "orgs": {
+      "type": "array",
+      "items": {
+        "$ref": "https://schemas.seedess.com/org.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

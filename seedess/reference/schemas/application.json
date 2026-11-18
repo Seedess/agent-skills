@@ -1,0 +1,37 @@
+{
+  "$id": "https://schemas.seedess.com/application.json",
+  "title": "Application",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "name": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "stack": {
+      "type": "string",
+      "description": "Player / delivery stack."
+    },
+    "traffic": {
+      "type": "string",
+      "description": "Monthly viewer-minutes band."
+    },
+    "spend": {
+      "type": "string",
+      "description": "Monthly delivery spend band."
+    },
+    "drm": {
+      "type": "string",
+      "description": "DRM requirement."
+    },
+    "complete": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

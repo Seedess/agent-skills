@@ -1,0 +1,19 @@
+{
+  "$id": "https://schemas.seedess.com/invoice-response.json",
+  "title": "InvoiceResponse",
+  "type": "object",
+  "required": [
+    "ok",
+    "invoice"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "const": true
+    },
+    "invoice": {
+      "$ref": "https://schemas.seedess.com/invoice.json"
+    }
+  },
+  "additionalProperties": false
+}

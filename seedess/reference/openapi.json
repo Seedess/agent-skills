@@ -1,0 +1,5106 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Seedess API",
+    "version": "2026-11-16",
+    "description": "Peer-assisted video delivery. Generated from contracts/api.json; do not edit by hand. Run `npm run docs:generate`."
+  },
+  "servers": [
+    {
+      "url": "https://seedess.com"
+    }
+  ],
+  "tags": [
+    {
+      "name": "platform",
+      "description": "Health, waitlist and pilot entry."
+    },
+    {
+      "name": "auth",
+      "description": "Accounts, sessions, OAuth and email links."
+    },
+    {
+      "name": "organisations",
+      "description": "Tenants, members, roles, invites and API keys."
+    },
+    {
+      "name": "streams",
+      "description": "Create and control streams through an API key or the dashboard session."
+    },
+    {
+      "name": "playback",
+      "description": "The browser data plane: playlists, segments, ICE config and the signaling room."
+    },
+    {
+      "name": "telemetry",
+      "description": "Per-session offload reporting."
+    },
+    {
+      "name": "pilot",
+      "description": "The post-sign-in pilot application."
+    },
+    {
+      "name": "billing",
+      "description": "Usage, verified savings, invoices and disputes."
+    },
+    {
+      "name": "admin",
+      "description": "Founder-only operations. These 404 unless the caller email is in ADMIN_EMAILS."
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "operationId": "getHealth",
+        "summary": "Health check",
+        "description": "Liveness probe for the Worker and its bindings.",
+        "tags": [
+          "platform"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/health"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "public",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/waitlist": {
+      "post": {
+        "operationId": "joinWaitlist",
+        "summary": "Apply for the pilot",
+        "description": "The pilot application. Sends a confirmation email and creates a pending applicant account. Rate limited per IP.",
+        "tags": [
+          "platform"
+        ],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/waitlist"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/waitlist-join"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "public",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/waitlist/count": {
+      "get": {
+        "operationId": "getWaitlistCount",
+        "summary": "Subscriber count",
+        "description": "Public count shown on the landing page. Cached for 60 seconds.",
+        "tags": [
+          "platform"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/waitlist-count"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "public",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/waitlist/export.csv": {
+      "get": {
+        "operationId": "exportWaitlist",
+        "summary": "Export subscribers (CSV)",
+        "description": "Admin-only CSV export of the waitlist. Requires the `ADMIN_TOKEN` bearer secret.",
+        "tags": [
+          "platform"
+        ],
+        "security": [
+          {
+            "adminToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No content."
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "adminToken",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/auth/signup": {
+      "post": {
+        "operationId": "signup",
+        "summary": "Create an account",
+        "description": "Creates a password account. New accounts are `pending` unless `AUTO_APPROVE_SIGNUPS` is on or the email is in `ADMIN_EMAILS`. Sets the session cookie and sends a verification email.",
+        "tags": [
+          "auth"
+        ],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "maxLength": 128
+                  },
+                  "name": {
+                    "type": "string",
+                    "maxLength": 80
+                  },
+                  "invite": {
+                    "type": "string",
+                    "description": "Invite token from the email link."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/session"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "public",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/auth/signin": {
+      "post": {
+        "operationId": "signin",
+        "summary": "Sign in with a password",
+        "description": "Sets the HttpOnly session cookie. The same error is returned for an unknown address and a wrong password.",
+        "tags": [
+          "auth"
+        ],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/session"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "public",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/auth/signout": {
+      "post": {
+        "operationId": "signout",
+        "summary": "Sign out",
+        "description": "Destroys the current session and clears the cookie.",
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ack"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "operationId": "getMe",
+        "summary": "Current account",
+        "description": "The signed-in account, its approval state, admin flag, and organisations. Works for pending accounts too.",
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/session"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/auth/magic": {
+      "get": {
+        "operationId": "magicLogin",
+        "summary": "Sign in from an email link",
+        "description": "One-time sign-in link sent to pilot applicants. Sets the session cookie and redirects to the dashboard.",
+        "tags": [
+          "auth"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect."
+          }
+        },
+        "x-auth": "public",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/auth/verify": {
+      "get": {
+        "operationId": "verifyEmailLink",
+        "summary": "Verify an email (link)",
+        "description": "Verifies the email and returns JSON. The link in the verification email points at the /verify/ page, which posts the token here or calls the GET form.",
+        "tags": [
+          "auth"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ack"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "public",
+        "x-sdk": "hls-p2p"
+      },
+      "post": {
+        "operationId": "verifyEmail",
+        "summary": "Verify an email (token)",
+        "description": "The JSON form of email verification, used by the dashboard.",
+        "tags": [
+          "auth"
+        ],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "token"
+                ],
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ack"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "public",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/auth/resend-verification": {
+      "post": {
+        "operationId": "resendVerification",
+        "summary": "Resend the verification email",
+        "description": "Sends a fresh verification link to the signed-in account.",
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ack"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/auth/forgot": {
+      "post": {
+        "operationId": "forgotPassword",
+        "summary": "Request a password reset",
+        "description": "Always acknowledges, whether or not the address exists.",
+        "tags": [
+          "auth"
+        ],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ack"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "public",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/auth/reset": {
+      "post": {
+        "operationId": "resetPassword",
+        "summary": "Reset a password",
+        "description": "Consumes a reset token and revokes every existing session for the account.",
+        "tags": [
+          "auth"
+        ],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "token",
+                  "password"
+                ],
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "maxLength": 128
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ack"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "public",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/auth/login/{provider}": {
+      "get": {
+        "operationId": "startOauth",
+        "summary": "Start Google or GitHub sign-in",
+        "description": "Redirects to the provider. `provider` is `google`, `github`, or `email`. Returns to `/api/auth/callback` and then the dashboard.",
+        "tags": [
+          "auth"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "google",
+                "github",
+                "email"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect."
+          }
+        },
+        "x-auth": "public",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/auth/callback": {
+      "get": {
+        "operationId": "oauthCallback",
+        "summary": "Finish Google or GitHub sign-in",
+        "description": "Exchanges the provider code, creates or finds the account, sets the session cookie and redirects to the dashboard.",
+        "tags": [
+          "auth"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "error",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect."
+          }
+        },
+        "x-auth": "public",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/orgs": {
+      "get": {
+        "operationId": "listOrgs",
+        "summary": "List organisations",
+        "description": "Every organisation the signed-in account belongs to, with its role.",
+        "tags": [
+          "organisations"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/org-list"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      },
+      "post": {
+        "operationId": "createOrg",
+        "summary": "Create an organisation",
+        "description": "Creates a tenant and makes the caller its owner. The account email must be verified.",
+        "tags": [
+          "organisations"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "maxLength": 80
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/org"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/orgs/{orgId}": {
+      "get": {
+        "operationId": "getOrg",
+        "summary": "Get an organisation",
+        "description": "Organisation details plus its members. Any member can read it.",
+        "tags": [
+          "organisations"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/org-detail"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      },
+      "patch": {
+        "operationId": "renameOrg",
+        "summary": "Rename an organisation",
+        "description": "Owner or admin, with a verified email.",
+        "tags": [
+          "organisations"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "maxLength": 80
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ack"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/orgs/{orgId}/members/{userId}": {
+      "patch": {
+        "operationId": "changeRole",
+        "summary": "Change a member role",
+        "description": "Owner only. The last owner cannot be demoted.",
+        "tags": [
+          "organisations"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "role"
+                ],
+                "properties": {
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "owner",
+                      "admin",
+                      "member"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ack"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      },
+      "delete": {
+        "operationId": "removeMember",
+        "summary": "Remove a member",
+        "description": "Owner or admin. Admins can only remove plain members; the last owner cannot be removed.",
+        "tags": [
+          "organisations"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ack"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/orgs/{orgId}/invites": {
+      "post": {
+        "operationId": "createInvite",
+        "summary": "Invite a teammate",
+        "description": "Emails an invite with the role. Owner or admin, with a verified email.",
+        "tags": [
+          "organisations"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "admin",
+                      "member"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ack"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/orgs/accept-invite": {
+      "post": {
+        "operationId": "acceptInvite",
+        "summary": "Accept an invite",
+        "description": "Joins the organisation the invite belongs to. The signed-in email must match.",
+        "tags": [
+          "organisations"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "token"
+                ],
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ack"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/orgs/{orgId}/keys": {
+      "post": {
+        "operationId": "createApiKey",
+        "summary": "Create an API key",
+        "description": "Owner or admin, with a verified email. The raw key is returned once; only its SHA-256 hash is stored. Scopes are fixed to `streams:read,streams:write,telemetry:write`.",
+        "tags": [
+          "organisations"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "maxLength": 80
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/api-key"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/streams": {
+      "get": {
+        "operationId": "listStreams",
+        "summary": "List streams (API key)",
+        "description": "Every stream owned by the key's tenant. Requires the `streams:read` scope.",
+        "tags": [
+          "streams"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/stream-list"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "apiKey",
+        "x-sdk": "hls-p2p"
+      },
+      "post": {
+        "operationId": "createStream",
+        "summary": "Create a stream (API key)",
+        "description": "Ingests a manifest, rewrites it, and returns a per-stream public token plus playback URLs. Requires the `streams:write` scope. Ingest is SSRF-guarded.",
+        "tags": [
+          "streams"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/stream-create"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/stream-create-response"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "apiKey",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/streams/{streamId}": {
+      "get": {
+        "operationId": "getStream",
+        "summary": "Get a stream (API key)",
+        "description": "Status, variants and segment count. Requires the `streams:read` scope.",
+        "tags": [
+          "streams"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "streamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/stream"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "apiKey",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/streams/{streamId}/refresh": {
+      "post": {
+        "operationId": "refreshStream",
+        "summary": "Refresh a live stream",
+        "description": "Fetches new live segments. Requires `streams:write`.",
+        "tags": [
+          "streams"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "streamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/stream-refresh"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "apiKey",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/streams/{streamId}/kill": {
+      "post": {
+        "operationId": "killStream",
+        "summary": "Turn peer delivery off",
+        "description": "The kill switch. CDN playback continues; `/signaling/config` reports `p2p:false` and the room refuses connections. Requires `streams:write`.",
+        "tags": [
+          "streams"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "streamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ack"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "apiKey",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/streams/{streamId}/revive": {
+      "post": {
+        "operationId": "reviveStream",
+        "summary": "Turn peer delivery back on",
+        "description": "Reverses the kill switch. Requires `streams:write`.",
+        "tags": [
+          "streams"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "streamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ack"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "apiKey",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/streams/{streamId}/metrics": {
+      "get": {
+        "operationId": "getStreamMetrics",
+        "summary": "Stream metrics (API key)",
+        "description": "Aggregated offload, CDN bytes, P2P bytes, failures, peers and sessions. Requires `streams:read`.",
+        "tags": [
+          "streams"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "streamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/stream-metrics"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "apiKey",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/orgs/{orgId}/streams": {
+      "get": {
+        "operationId": "listOrgStreams",
+        "summary": "List streams (dashboard)",
+        "description": "The organisation's streams. Any member can read.",
+        "tags": [
+          "streams"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/stream-list"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      },
+      "post": {
+        "operationId": "createOrgStream",
+        "summary": "Create a stream (dashboard)",
+        "description": "Owner or admin, with a verified email. Same ingest pipeline as the API-key route and returns the full detail, playback URLs and install snippet.",
+        "tags": [
+          "streams"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/stream-create"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/stream-detail"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/orgs/{orgId}/streams/{streamId}": {
+      "get": {
+        "operationId": "getOrgStream",
+        "summary": "Get a stream (dashboard)",
+        "description": "Full detail: variants, controls, playback URLs and the copy-paste snippet.",
+        "tags": [
+          "streams"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "streamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/stream-detail"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/orgs/{orgId}/streams/{streamId}/metrics": {
+      "get": {
+        "operationId": "getOrgStreamMetrics",
+        "summary": "Stream metrics (dashboard)",
+        "description": "The same aggregate as the API-key metrics route.",
+        "tags": [
+          "streams"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "streamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/stream-metrics"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/orgs/{orgId}/streams/{streamId}/controls": {
+      "patch": {
+        "operationId": "patchOrgStreamControls",
+        "summary": "Update stream controls",
+        "description": "Kill switch, offload cap, allowed origins and metered default. Owner or admin, with a verified email.",
+        "tags": [
+          "streams"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "streamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/controls"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/stream-controls-response"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/play/{streamId}/master.m3u8": {
+      "get": {
+        "operationId": "getMasterPlaylist",
+        "summary": "HLS master playlist",
+        "description": "The rewritten master. Segment URIs carry `h` (SHA-256) and `size`, and a `token` query parameter. Requires the per-stream public token.",
+        "tags": [
+          "playback"
+        ],
+        "security": [
+          {
+            "streamToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "streamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No content."
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "publicToken",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/play/{streamId}/live.m3u8": {
+      "get": {
+        "operationId": "getMediaPlaylist",
+        "summary": "HLS media playlist (default variant)",
+        "description": "The rewritten media playlist for variant `v0`.",
+        "tags": [
+          "playback"
+        ],
+        "security": [
+          {
+            "streamToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "streamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No content."
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "publicToken",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/play/{streamId}/{variantId}/live.m3u8": {
+      "get": {
+        "operationId": "getVariantPlaylist",
+        "summary": "HLS media playlist (variant)",
+        "description": "The rewritten media playlist for one rendition.",
+        "tags": [
+          "playback"
+        ],
+        "security": [
+          {
+            "streamToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "streamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No content."
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "publicToken",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/play/{streamId}/init": {
+      "get": {
+        "operationId": "getInitSegment",
+        "summary": "Init segment (default variant)",
+        "description": "The fMP4/CMAF initialization segment for variant `v0`, served from R2 with range support.",
+        "tags": [
+          "playback"
+        ],
+        "security": [
+          {
+            "streamToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "streamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No content."
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "publicToken",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/play/{streamId}/{variantId}/init": {
+      "get": {
+        "operationId": "getVariantInitSegment",
+        "summary": "Init segment (variant)",
+        "description": "The initialization segment for one rendition.",
+        "tags": [
+          "playback"
+        ],
+        "security": [
+          {
+            "streamToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "streamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No content."
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "publicToken",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/play/{streamId}/segments/{seq}": {
+      "get": {
+        "operationId": "getSegment",
+        "summary": "Media segment (default variant)",
+        "description": "Immutable segment bytes with CORS and range support.",
+        "tags": [
+          "playback"
+        ],
+        "security": [
+          {
+            "streamToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "streamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "seq",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No content."
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "publicToken",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/play/{streamId}/{variantId}/segments/{seq}": {
+      "get": {
+        "operationId": "getVariantSegment",
+        "summary": "Media segment (variant)",
+        "description": "Immutable segment bytes for one rendition.",
+        "tags": [
+          "playback"
+        ],
+        "security": [
+          {
+            "streamToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "streamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "seq",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No content."
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "publicToken",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/play/{streamId}/manifest.mpd": {
+      "get": {
+        "operationId": "getDashManifest",
+        "summary": "DASH manifest",
+        "description": "The rewritten MPD. Served when `DASH_ENABLED` is on; there is no shipped DASH player SDK yet.",
+        "tags": [
+          "playback"
+        ],
+        "security": [
+          {
+            "streamToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "streamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No content."
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "publicToken",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/signaling/config": {
+      "get": {
+        "operationId": "getSignalingConfig",
+        "summary": "Browser mesh config",
+        "description": "ICE servers, peer cap, offload cap, metered default, and `p2p` (false when the kill switch is on). The SDK fetches this before joining the room.",
+        "tags": [
+          "playback"
+        ],
+        "security": [
+          {
+            "streamToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/signaling-config"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "publicToken",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/signaling/room/{streamId}": {
+      "get": {
+        "operationId": "connectSignaling",
+        "summary": "Signaling room (WebSocket)",
+        "description": "Upgrades to a WebSocket and relays `welcome`, `peer-join`, `peer-leave`, `signal`, `have`, `ping`/`pong`. One room per stream, one broadcaster per room. The Durable Object never carries media bytes.",
+        "tags": [
+          "playback"
+        ],
+        "security": [
+          {
+            "streamToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "streamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "peer",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,32}$"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "viewer",
+                "broadcaster"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "101": {
+            "description": "101 Switching Protocols. Send and receive JSON frames."
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "publicToken",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/telemetry": {
+      "post": {
+        "operationId": "ingestTelemetry",
+        "summary": "Send a telemetry batch",
+        "description": "Best-effort, one batch per session. Malformed bodies and unknown streams are dropped with 204, never 500. Rate limit: 30 per minute per IP. Bodies over 16 KiB get 413.",
+        "tags": [
+          "telemetry"
+        ],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/telemetry-batch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Accepted; no body."
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "public",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/application": {
+      "get": {
+        "operationId": "getApplication",
+        "summary": "Read the pilot application",
+        "description": "The qualification fields saved for the signed-in account.",
+        "tags": [
+          "pilot"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/application"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      },
+      "post": {
+        "operationId": "saveApplication",
+        "summary": "Save the pilot application",
+        "description": "Upserts the qualification fields on the same waitlist row and marks the account's application complete.",
+        "tags": [
+          "pilot"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/application"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ack"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/orgs/{orgId}/usage": {
+      "get": {
+        "operationId": "getUsage",
+        "summary": "Usage summary",
+        "description": "Tenant totals plus a per-stream breakdown. Any member can read.",
+        "tags": [
+          "billing"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/usage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/orgs/{orgId}/metering": {
+      "get": {
+        "operationId": "getMetering",
+        "summary": "Metering and verified savings",
+        "description": "Invoice-grade aggregation over an optional `from`/`to` period, with the captured CDN rate, daily reconciliation and per-stream breakdown.",
+        "tags": [
+          "billing"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/metering"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      },
+      "patch": {
+        "operationId": "patchMetering",
+        "summary": "Set the billing baseline",
+        "description": "CDN egress rate, billing plan, savings-share percentage and per-minute rate. Owner or admin, with a verified email.",
+        "tags": [
+          "billing"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "egressRateUsdPerGb": {
+                    "type": [
+                      "number",
+                      "null"
+                    ],
+                    "exclusiveMinimum": 0,
+                    "maximum": 100
+                  },
+                  "billingPlan": {
+                    "type": "string",
+                    "enum": [
+                      "savings_share",
+                      "per_minute"
+                    ]
+                  },
+                  "savingsSharePct": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 100
+                  },
+                  "perMinuteRateUsd": {
+                    "type": [
+                      "number",
+                      "null"
+                    ],
+                    "minimum": 0
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/metering-baseline"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/orgs/{orgId}/metering.csv": {
+      "get": {
+        "operationId": "getMeteringCsv",
+        "summary": "Daily reconciliation CSV",
+        "description": "The artifact you attach to a CDN invoice dispute: one row per day, with savings and fee columns.",
+        "tags": [
+          "billing"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No content."
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/orgs/{orgId}/invoices": {
+      "get": {
+        "operationId": "listInvoices",
+        "summary": "List invoices",
+        "description": "Every invoice for the organisation, newest first.",
+        "tags": [
+          "billing"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/invoice-list"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      },
+      "post": {
+        "operationId": "createInvoice",
+        "summary": "Generate a draft invoice",
+        "description": "Savings-share only in the pilot: prices offloaded bytes at the captured CDN rate. Also mirrors a draft into Stripe when the key is set. Owner or admin, with a verified email.",
+        "tags": [
+          "billing"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "periodStart",
+                  "periodEnd"
+                ],
+                "properties": {
+                  "periodStart": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "periodEnd": {
+                    "type": "string",
+                    "format": "date"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/invoice-created"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/orgs/{orgId}/invoices/{invoiceId}": {
+      "get": {
+        "operationId": "getInvoice",
+        "summary": "Get an invoice",
+        "description": "Pass `refresh=1` to re-read the Stripe status and hosted URL.",
+        "tags": [
+          "billing"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "invoiceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/invoice-response"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/orgs/{orgId}/invoices/{invoiceId}/dispute": {
+      "post": {
+        "operationId": "disputeInvoice",
+        "summary": "Open an invoice dispute",
+        "description": "Any member can dispute an invoice with a reason.",
+        "tags": [
+          "billing"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "invoiceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "reason"
+                ],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "maxLength": 2000
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/invoice-response"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "session",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/admin/overview": {
+      "get": {
+        "operationId": "adminOverview",
+        "summary": "Admin overview",
+        "description": "Health and cross-database counts. Requires a signed-in account whose email is in `ADMIN_EMAILS`; otherwise the whole admin surface 404s.",
+        "tags": [
+          "admin"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/admin-overview"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "admin",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/admin/tenants": {
+      "get": {
+        "operationId": "adminTenants",
+        "summary": "Admin tenants",
+        "description": "All organisations with member and stream counts.",
+        "tags": [
+          "admin"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/admin-tenants"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "admin",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/admin/applications": {
+      "get": {
+        "operationId": "adminApplications",
+        "summary": "Admin applications",
+        "description": "Recent pilot applications, newest first, with the account approval state.",
+        "tags": [
+          "admin"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/admin-applications"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "admin",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/admin/applications/approve": {
+      "post": {
+        "operationId": "adminApproveApplication",
+        "summary": "Approve an application",
+        "description": "Activates the account, creates its pilot organisation and emails a dashboard link.",
+        "tags": [
+          "admin"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ack"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "admin",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/admin/applications/reject": {
+      "post": {
+        "operationId": "adminRejectApplication",
+        "summary": "Reject an application",
+        "description": "Marks a pending account `rejected`.",
+        "tags": [
+          "admin"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ack"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "admin",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/admin/invoices": {
+      "get": {
+        "operationId": "adminInvoices",
+        "summary": "Admin invoices",
+        "description": "Invoices across all tenants. `status=open` filters to open disputes.",
+        "tags": [
+          "admin"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "open",
+                "resolved"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/admin-invoices"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "admin",
+        "x-sdk": "hls-p2p"
+      }
+    },
+    "/api/v1/admin/invoices/{invoiceId}/resolve": {
+      "post": {
+        "operationId": "adminResolveInvoice",
+        "summary": "Resolve a dispute",
+        "description": "Marks an open dispute resolved and stores an optional note.",
+        "tags": [
+          "admin"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "invoiceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "note": {
+                    "type": "string",
+                    "maxLength": 2000
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ack"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error envelope. Codes are catalogued in contracts/errors.json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        },
+        "x-auth": "admin",
+        "x-sdk": "hls-p2p"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ack": {
+        "$id": "https://schemas.seedess.com/ack.json",
+        "title": "Ack",
+        "type": "object",
+        "required": [
+          "ok"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "additionalProperties": true
+      },
+      "admin-applications": {
+        "$id": "https://schemas.seedess.com/admin-applications.json",
+        "title": "AdminApplications",
+        "type": "object",
+        "required": [
+          "ok",
+          "applications",
+          "total"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "applications": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "admin-invoices": {
+        "$id": "https://schemas.seedess.com/admin-invoices.json",
+        "title": "AdminInvoices",
+        "type": "object",
+        "required": [
+          "ok",
+          "invoices"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "invoices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "admin-overview": {
+        "$id": "https://schemas.seedess.com/admin-overview.json",
+        "title": "AdminOverview",
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "health": {
+            "type": "object",
+            "properties": {
+              "ok": {
+                "type": "boolean"
+              },
+              "service": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "counts": {
+            "type": "object",
+            "properties": {
+              "tenants": {
+                "type": "integer"
+              },
+              "users": {
+                "type": "integer"
+              },
+              "streams": {
+                "type": "integer"
+              },
+              "metricBuckets": {
+                "type": "integer"
+              },
+              "applications": {
+                "type": "integer"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "admin-tenants": {
+        "$id": "https://schemas.seedess.com/admin-tenants.json",
+        "title": "AdminTenants",
+        "type": "object",
+        "required": [
+          "ok",
+          "tenants"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "tenants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "name"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "plan": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "members": {
+                  "type": "integer"
+                },
+                "streams": {
+                  "type": "integer"
+                },
+                "createdAt": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "api-key": {
+        "$id": "https://schemas.seedess.com/api-key.json",
+        "title": "ApiKey",
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "id": {
+            "type": "string",
+            "description": "Key id (`key_…`)."
+          },
+          "name": {
+            "type": "string"
+          },
+          "apiKey": {
+            "type": "string",
+            "description": "The raw secret (`key_…`). Returned once and never stored in plain text."
+          }
+        },
+        "additionalProperties": false
+      },
+      "application": {
+        "$id": "https://schemas.seedess.com/application.json",
+        "title": "Application",
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "name": {
+            "type": "string"
+          },
+          "website": {
+            "type": "string"
+          },
+          "stack": {
+            "type": "string",
+            "description": "Player / delivery stack."
+          },
+          "traffic": {
+            "type": "string",
+            "description": "Monthly viewer-minutes band."
+          },
+          "spend": {
+            "type": "string",
+            "description": "Monthly delivery spend band."
+          },
+          "drm": {
+            "type": "string",
+            "description": "DRM requirement."
+          },
+          "complete": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "controls": {
+        "$id": "https://schemas.seedess.com/controls.json",
+        "title": "StreamControls",
+        "type": "object",
+        "properties": {
+          "killSwitch": {
+            "type": "boolean"
+          },
+          "offloadCap": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Maximum share of traffic peers may serve. Null means uncapped."
+          },
+          "allowedOrigins": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            },
+            "description": "Browser origins allowed to use the public token. Empty means any origin."
+          },
+          "meteredDefault": {
+            "type": "boolean",
+            "description": "Prefer the CDN on connections the browser reports as metered."
+          }
+        },
+        "additionalProperties": false
+      },
+      "error": {
+        "$id": "https://schemas.seedess.com/error.json",
+        "title": "Error",
+        "type": "object",
+        "required": [
+          "ok",
+          "error"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": false
+          },
+          "error": {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Machine-readable code. See contracts/errors.json for the catalog."
+              },
+              "message": {
+                "type": "string",
+                "description": "Human-readable explanation."
+              },
+              "details": {
+                "description": "Optional structured context."
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "health": {
+        "$id": "https://schemas.seedess.com/health.json",
+        "title": "Health",
+        "type": "object",
+        "required": [
+          "ok",
+          "service"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "service": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "invoice-created": {
+        "$id": "https://schemas.seedess.com/invoice-created.json",
+        "title": "InvoiceCreated",
+        "type": "object",
+        "required": [
+          "ok",
+          "invoice"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "invoice": {
+            "$ref": "#/components/schemas/invoice"
+          },
+          "stripe": {
+            "type": "object",
+            "description": "Best-effort Stripe mirror. `connected:false` when the key is unset.",
+            "properties": {
+              "connected": {
+                "type": "boolean"
+              },
+              "invoiceId": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "hostedInvoiceUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "skipped": {
+                "type": "boolean"
+              },
+              "reason": {
+                "type": "string"
+              },
+              "error": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "invoice-list": {
+        "$id": "https://schemas.seedess.com/invoice-list.json",
+        "title": "InvoiceList",
+        "type": "object",
+        "required": [
+          "ok",
+          "invoices"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "invoices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/invoice"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "invoice-response": {
+        "$id": "https://schemas.seedess.com/invoice-response.json",
+        "title": "InvoiceResponse",
+        "type": "object",
+        "required": [
+          "ok",
+          "invoice"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "invoice": {
+            "$ref": "#/components/schemas/invoice"
+          }
+        },
+        "additionalProperties": false
+      },
+      "invoice": {
+        "$id": "https://schemas.seedess.com/invoice.json",
+        "title": "Invoice",
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "periodStart",
+          "periodEnd"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "plan": {
+            "type": "string",
+            "enum": [
+              "savings_share",
+              "per_minute"
+            ]
+          },
+          "periodStart": {
+            "type": "string",
+            "description": "YYYY-MM-DD"
+          },
+          "periodEnd": {
+            "type": "string",
+            "description": "YYYY-MM-DD"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "open",
+              "paid",
+              "void"
+            ]
+          },
+          "cdnBytes": {
+            "type": "integer"
+          },
+          "p2pBytes": {
+            "type": "integer"
+          },
+          "offloadPercent": {
+            "type": "number"
+          },
+          "egressRateUsdPerGb": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "feeSharePct": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "savingsUsd": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "feeUsd": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "keepUsd": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "peerServedMinutes": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "perMinuteRateUsd": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "disputeStatus": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "open",
+              "resolved",
+              null
+            ]
+          },
+          "disputeReason": {
+            "type": "string"
+          },
+          "disputedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resolvedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resolutionNote": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "stripeInvoiceId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "stripeStatus": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "hostedInvoiceUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "metering-baseline": {
+        "$id": "https://schemas.seedess.com/metering-baseline.json",
+        "title": "MeteringBaseline",
+        "type": "object",
+        "required": [
+          "ok",
+          "baseline"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "baseline": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "metering": {
+        "$id": "https://schemas.seedess.com/metering.json",
+        "title": "Metering",
+        "type": "object",
+        "required": [
+          "summary"
+        ],
+        "properties": {
+          "period": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "from": {
+                "type": "string",
+                "description": "Inclusive day, YYYY-MM-DD."
+              },
+              "to": {
+                "type": "string",
+                "description": "Exclusive day, YYYY-MM-DD."
+              }
+            },
+            "additionalProperties": false
+          },
+          "baseline": {
+            "type": "object",
+            "properties": {
+              "egressRateUsdPerGb": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "billingPlan": {
+                "type": "string",
+                "enum": [
+                  "savings_share",
+                  "per_minute"
+                ]
+              },
+              "savingsSharePct": {
+                "type": "number"
+              },
+              "perMinuteRateUsd": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "feeShare": {
+                "type": "number"
+              },
+              "currency": {
+                "type": "string",
+                "const": "USD"
+              }
+            },
+            "additionalProperties": false
+          },
+          "summary": {
+            "$ref": "#/components/schemas/metrics"
+          },
+          "daily": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "streams": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "metrics": {
+        "$id": "https://schemas.seedess.com/metrics.json",
+        "title": "Metrics",
+        "type": "object",
+        "required": [
+          "cdnBytes",
+          "p2pBytes",
+          "offloadPercent"
+        ],
+        "properties": {
+          "cdnBytes": {
+            "type": "integer",
+            "description": "Bytes served by the origin/CDN path."
+          },
+          "p2pBytes": {
+            "type": "integer",
+            "description": "Bytes served by peers and accepted after verification."
+          },
+          "offloadPercent": {
+            "type": "number",
+            "description": "p2pBytes / (cdnBytes + p2pBytes), as a percentage."
+          },
+          "hashFailures": {
+            "type": "integer"
+          },
+          "fallbacks": {
+            "type": "integer"
+          },
+          "rebuffers": {
+            "type": "integer"
+          },
+          "peakPeers": {
+            "type": "integer"
+          },
+          "sessions": {
+            "type": "integer"
+          },
+          "savingsUsd": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Offloaded bytes priced at the captured CDN rate. Present on metering responses."
+          },
+          "feeUsd": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Seedess savings-share fee. Present on metering responses."
+          },
+          "keepUsd": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Savings left with the customer after the fee. Present on metering responses."
+          }
+        },
+        "additionalProperties": false
+      },
+      "org-detail": {
+        "$id": "https://schemas.seedess.com/org-detail.json",
+        "title": "OrgDetail",
+        "type": "object",
+        "required": [
+          "ok",
+          "org",
+          "members"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "org": {
+            "$ref": "#/components/schemas/org"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/org-member"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "org-list": {
+        "$id": "https://schemas.seedess.com/org-list.json",
+        "title": "OrgList",
+        "type": "object",
+        "required": [
+          "ok",
+          "orgs"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "orgs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/org"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "org-member": {
+        "$id": "https://schemas.seedess.com/org-member.json",
+        "title": "OrgMember",
+        "type": "object",
+        "required": [
+          "userId",
+          "email",
+          "role"
+        ],
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin",
+              "member"
+            ]
+          },
+          "isYou": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "org": {
+        "$id": "https://schemas.seedess.com/org.json",
+        "title": "Organisation",
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Organisation id (`ten_…`). Also the tenant id."
+          },
+          "name": {
+            "type": "string"
+          },
+          "plan": {
+            "type": "string",
+            "enum": [
+              "pilot",
+              "savings_share",
+              "per_minute"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "suspended"
+            ]
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin",
+              "member"
+            ],
+            "description": "The caller's role in this organisation, on list responses."
+          },
+          "myRole": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin",
+              "member"
+            ],
+            "description": "The caller's role, on single-organisation responses."
+          },
+          "memberCount": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": true
+      },
+      "playback": {
+        "$id": "https://schemas.seedess.com/playback.json",
+        "title": "Playback",
+        "type": "object",
+        "required": [
+          "signaling"
+        ],
+        "properties": {
+          "format": {
+            "type": "string",
+            "enum": [
+              "hls",
+              "dash"
+            ]
+          },
+          "master": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Rewritten HLS master playlist with `h`/`size` on every segment. Null for DASH."
+          },
+          "manifest": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Rewritten DASH MPD. Null for HLS."
+          },
+          "playlist": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Single-variant media playlist, when the source has no master."
+          },
+          "signaling": {
+            "type": "string",
+            "description": "WebSocket room URL. Exchange the path's `https:` for `wss:`."
+          },
+          "config": {
+            "type": "string",
+            "description": "ICE/config endpoint for the browser (`/signaling/config?token=…`)."
+          }
+        },
+        "additionalProperties": false
+      },
+      "session": {
+        "$id": "https://schemas.seedess.com/session.json",
+        "title": "Session",
+        "type": "object",
+        "required": [
+          "user"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "user": {
+            "$ref": "#/components/schemas/user"
+          },
+          "orgs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/org"
+            }
+          },
+          "requiresVerification": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "active",
+              "suspended"
+            ]
+          },
+          "approved": {
+            "type": "boolean"
+          },
+          "isAdmin": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "signaling-config": {
+        "$id": "https://schemas.seedess.com/signaling-config.json",
+        "title": "SignalingConfig",
+        "type": "object",
+        "required": [
+          "ok",
+          "p2p",
+          "maxPeers",
+          "iceServers"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "p2p": {
+            "type": "boolean",
+            "description": "False when the stream's kill switch is on. The client must then stay on the CDN."
+          },
+          "maxPeers": {
+            "type": "integer"
+          },
+          "iceServers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "turn": {
+            "type": "boolean"
+          },
+          "offloadCap": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "meteredDefault": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "stream-controls-response": {
+        "$id": "https://schemas.seedess.com/stream-controls-response.json",
+        "title": "StreamControlsResponse",
+        "type": "object",
+        "required": [
+          "ok",
+          "stream"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "stream": {
+            "$ref": "#/components/schemas/stream"
+          }
+        },
+        "additionalProperties": false
+      },
+      "stream-create-response": {
+        "$id": "https://schemas.seedess.com/stream-create-response.json",
+        "title": "StreamCreateResponse",
+        "type": "object",
+        "required": [
+          "ok",
+          "id",
+          "publicToken",
+          "playback"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "id": {
+            "type": "string"
+          },
+          "live": {
+            "type": "boolean"
+          },
+          "master": {
+            "type": "boolean",
+            "description": "True when the source was a multi-variant master."
+          },
+          "targetDuration": {
+            "type": "number"
+          },
+          "mediaSequence": {
+            "type": "integer"
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "addedSegments": {
+            "type": "integer"
+          },
+          "skippedSegments": {
+            "type": "integer"
+          },
+          "totalSegments": {
+            "type": "integer"
+          },
+          "init": {
+            "type": "boolean"
+          },
+          "publicToken": {
+            "type": "string",
+            "description": "Read-only browser token (`pk_…`). Safe to put in page source."
+          },
+          "playback": {
+            "$ref": "#/components/schemas/playback"
+          }
+        },
+        "additionalProperties": true
+      },
+      "stream-create": {
+        "$id": "https://schemas.seedess.com/stream-create.json",
+        "title": "StreamCreate",
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "The origin HLS master or media playlist URL. http(s) only; private addresses are refused."
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "Stable id, also the signaling room. Omit to generate `str_…`."
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "live": {
+            "type": "boolean",
+            "description": "Treat the source as a live window."
+          }
+        },
+        "additionalProperties": false
+      },
+      "stream-detail": {
+        "$id": "https://schemas.seedess.com/stream-detail.json",
+        "title": "StreamDetail",
+        "type": "object",
+        "required": [
+          "ok",
+          "stream"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "stream": {
+            "$ref": "#/components/schemas/stream"
+          }
+        },
+        "additionalProperties": false
+      },
+      "stream-list": {
+        "$id": "https://schemas.seedess.com/stream-list.json",
+        "title": "StreamList",
+        "type": "object",
+        "required": [
+          "ok",
+          "streams"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "streams": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/stream"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "stream-metrics": {
+        "$id": "https://schemas.seedess.com/stream-metrics.json",
+        "title": "StreamMetrics",
+        "type": "object",
+        "required": [
+          "ok",
+          "id",
+          "metrics"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "id": {
+            "type": "string"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/metrics"
+          }
+        },
+        "additionalProperties": false
+      },
+      "stream-refresh": {
+        "$id": "https://schemas.seedess.com/stream-refresh.json",
+        "title": "StreamRefresh",
+        "type": "object",
+        "required": [
+          "ok",
+          "id"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "id": {
+            "type": "string"
+          },
+          "live": {
+            "type": "boolean"
+          },
+          "addedSegments": {
+            "type": "integer"
+          },
+          "skippedSegments": {
+            "type": "integer"
+          },
+          "totalSegments": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": true
+      },
+      "stream-variant": {
+        "$id": "https://schemas.seedess.com/stream-variant.json",
+        "title": "StreamVariant",
+        "type": "object",
+        "required": [
+          "variantId",
+          "kind",
+          "uri"
+        ],
+        "properties": {
+          "variantId": {
+            "type": "string",
+            "description": "Manifest index (`v0`, `v1`) or `audio_0` / `sub_0` for auxiliary tracks."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "video",
+              "audio",
+              "subtitles"
+            ]
+          },
+          "uri": {
+            "type": "string",
+            "description": "Upstream media playlist URI."
+          },
+          "bandwidth": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "resolution": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "language": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "stream": {
+        "$id": "https://schemas.seedess.com/stream.json",
+        "title": "Stream",
+        "type": "object",
+        "required": [
+          "id",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Stream id, also the signaling room name."
+          },
+          "title": {
+            "type": "string"
+          },
+          "live": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "killed"
+            ]
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "hls",
+              "dash"
+            ]
+          },
+          "killSwitch": {
+            "type": "boolean",
+            "description": "When true the CDN carries every byte."
+          },
+          "targetDuration": {
+            "type": "number"
+          },
+          "mediaSequence": {
+            "type": "integer"
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/stream-variant"
+            }
+          },
+          "segments": {
+            "type": "integer"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "playback": {
+            "$ref": "#/components/schemas/playback"
+          },
+          "snippet": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Copy-paste hls.js integration. Null when there is no shipped SDK for the format."
+          },
+          "controls": {
+            "$ref": "#/components/schemas/controls"
+          }
+        },
+        "additionalProperties": false
+      },
+      "telemetry-batch": {
+        "$id": "https://schemas.seedess.com/telemetry-batch.json",
+        "title": "TelemetryBatch",
+        "type": "object",
+        "required": [
+          "sessionId",
+          "streamId"
+        ],
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "description": "Random id generated once per playback session. The server counts a session on first sight."
+          },
+          "streamId": {
+            "type": "string"
+          },
+          "cdnBytes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "p2pBytes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "hashFailures": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "fallbacks": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "rebuffers": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "peakPeers": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": true
+      },
+      "usage": {
+        "$id": "https://schemas.seedess.com/usage.json",
+        "title": "Usage",
+        "type": "object",
+        "required": [
+          "ok",
+          "summary",
+          "streams"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "summary": {
+            "$ref": "#/components/schemas/metrics"
+          },
+          "streams": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "metrics"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "metrics": {
+                  "$ref": "#/components/schemas/metrics"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "user": {
+        "$id": "https://schemas.seedess.com/user.json",
+        "title": "User",
+        "type": "object",
+        "required": [
+          "id",
+          "email"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Account id (`usr_…`)."
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "active",
+              "suspended"
+            ]
+          },
+          "emailVerified": {
+            "type": "boolean"
+          },
+          "authProvider": {
+            "type": "string",
+            "enum": [
+              "password",
+              "google",
+              "github",
+              "email"
+            ]
+          },
+          "applicationCompletedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      },
+      "waitlist-count": {
+        "$id": "https://schemas.seedess.com/waitlist-count.json",
+        "title": "WaitlistCount",
+        "type": "object",
+        "required": [
+          "ok",
+          "count"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "count": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "waitlist-join": {
+        "$id": "https://schemas.seedess.com/waitlist-join.json",
+        "title": "WaitlistJoin",
+        "type": "object",
+        "required": [
+          "ok"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "alreadySubscribed": {
+            "type": "boolean"
+          },
+          "count": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "waitlist": {
+        "$id": "https://schemas.seedess.com/waitlist.json",
+        "title": "WaitlistEntry",
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "name": {
+            "type": "string"
+          },
+          "website": {
+            "type": "string"
+          },
+          "stack": {
+            "type": "string"
+          },
+          "traffic": {
+            "type": "string"
+          },
+          "spend": {
+            "type": "string"
+          },
+          "drm": {
+            "type": "string"
+          },
+          "utm_source": {
+            "type": "string"
+          },
+          "utm_medium": {
+            "type": "string"
+          },
+          "utm_campaign": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "apiKey": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Control-plane API key (`key_…`). Server-side only; never ship it in a browser."
+      },
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "seedess_session",
+        "description": "HttpOnly dashboard session cookie, set by sign-in or OAuth."
+      },
+      "streamToken": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "token",
+        "description": "Per-stream public token (`pk_…`). Read-only; safe in page source."
+      },
+      "adminToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "The ADMIN_TOKEN Worker secret."
+      }
+    }
+  },
+  "x-error-catalog": {
+    "BAD_REQUEST": "The request body or parameters are missing or malformed.",
+    "UNAUTHORIZED": "No valid credential was supplied, or it is no longer valid.",
+    "FORBIDDEN": "The credential is valid but the account or role is not allowed to do this.",
+    "NOT_FOUND": "The resource does not exist, or the caller cannot see it.",
+    "METHOD_NOT_ALLOWED": "The route exists but does not accept this HTTP method.",
+    "RATE_LIMITED": "Too many requests from this address. Retry after the Retry-After header.",
+    "QUOTA_EXCEEDED": "The tenant has reached its stream limit.",
+    "PAYLOAD_TOO_LARGE": "A telemetry batch exceeded 16 KiB and was rejected.",
+    "INVALID_CREDENTIALS": "The email or password is incorrect.",
+    "EMAIL_TAKEN": "An account with that email already exists.",
+    "EMAIL_UNVERIFIED": "Verify the account email before creating or changing resources.",
+    "INVALID_TOKEN": "The verification or reset token is invalid or expired.",
+    "INVITE_INVALID": "The organisation invite is invalid, expired, or for another address.",
+    "ALREADY_MEMBER": "That address already belongs to the organisation.",
+    "LAST_OWNER": "An organisation must keep at least one owner.",
+    "INGEST_FAILED": "Seedess could not fetch or parse the manifest.",
+    "REFRESH_FAILED": "Seedess could not refresh the live manifest.",
+    "DEMO_NOT_READY": "The public demo source is not configured on this Worker.",
+    "ORIGIN_NOT_ALLOWED": "The request Origin is not on the stream's allow-list.",
+    "P2P_DISABLED": "Peer delivery is disabled for this stream by its kill switch.",
+    "NOT_READY": "The playlist or segments are not available yet.",
+    "EGRESS_RATE_MISSING": "Set the CDN egress rate before generating an invoice.",
+    "MINUTES_NOT_TRACKED": "Per-minute billing needs peer-served minutes, which are not tracked yet.",
+    "DISPUTE_CLOSED": "This invoice dispute is already resolved.",
+    "NO_DISPUTE": "This invoice has no open dispute.",
+    "NOT_IMPLEMENTED": "The feature exists in the contract but is not built yet."
+  }
+}

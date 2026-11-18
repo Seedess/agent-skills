@@ -1,0 +1,26 @@
+{
+  "$id": "https://schemas.seedess.com/org-detail.json",
+  "title": "OrgDetail",
+  "type": "object",
+  "required": [
+    "ok",
+    "org",
+    "members"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "const": true
+    },
+    "org": {
+      "$ref": "https://schemas.seedess.com/org.json"
+    },
+    "members": {
+      "type": "array",
+      "items": {
+        "$ref": "https://schemas.seedess.com/org-member.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

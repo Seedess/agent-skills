@@ -1,0 +1,19 @@
+{
+  "$id": "https://schemas.seedess.com/stream-detail.json",
+  "title": "StreamDetail",
+  "type": "object",
+  "required": [
+    "ok",
+    "stream"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "const": true
+    },
+    "stream": {
+      "$ref": "https://schemas.seedess.com/stream.json"
+    }
+  },
+  "additionalProperties": false
+}

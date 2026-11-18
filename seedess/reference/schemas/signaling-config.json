@@ -1,0 +1,44 @@
+{
+  "$id": "https://schemas.seedess.com/signaling-config.json",
+  "title": "SignalingConfig",
+  "type": "object",
+  "required": [
+    "ok",
+    "p2p",
+    "maxPeers",
+    "iceServers"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "const": true
+    },
+    "p2p": {
+      "type": "boolean",
+      "description": "False when the stream's kill switch is on. The client must then stay on the CDN."
+    },
+    "maxPeers": {
+      "type": "integer"
+    },
+    "iceServers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "turn": {
+      "type": "boolean"
+    },
+    "offloadCap": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "meteredDefault": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

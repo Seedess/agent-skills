@@ -1,0 +1,36 @@
+{
+  "$id": "https://schemas.seedess.com/error.json",
+  "title": "Error",
+  "type": "object",
+  "required": [
+    "ok",
+    "error"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "const": false
+    },
+    "error": {
+      "type": "object",
+      "required": [
+        "code"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Machine-readable code. See contracts/errors.json for the catalog."
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable explanation."
+        },
+        "details": {
+          "description": "Optional structured context."
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,34 @@
+{
+  "$id": "https://schemas.seedess.com/org-member.json",
+  "title": "OrgMember",
+  "type": "object",
+  "required": [
+    "userId",
+    "email",
+    "role"
+  ],
+  "properties": {
+    "userId": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "name": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "owner",
+        "admin",
+        "member"
+      ]
+    },
+    "isYou": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,19 @@
+{
+  "$id": "https://schemas.seedess.com/waitlist-count.json",
+  "title": "WaitlistCount",
+  "type": "object",
+  "required": [
+    "ok",
+    "count"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "const": true
+    },
+    "count": {
+      "type": "integer"
+    }
+  },
+  "additionalProperties": false
+}

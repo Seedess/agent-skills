@@ -1,0 +1,15 @@
+{
+  "$id": "https://schemas.seedess.com/ack.json",
+  "title": "Ack",
+  "type": "object",
+  "required": [
+    "ok"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "const": true
+    }
+  },
+  "additionalProperties": true
+}

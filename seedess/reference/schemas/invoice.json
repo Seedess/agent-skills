@@ -1,0 +1,145 @@
+{
+  "$id": "https://schemas.seedess.com/invoice.json",
+  "title": "Invoice",
+  "type": "object",
+  "required": [
+    "id",
+    "status",
+    "periodStart",
+    "periodEnd"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "plan": {
+      "type": "string",
+      "enum": [
+        "savings_share",
+        "per_minute"
+      ]
+    },
+    "periodStart": {
+      "type": "string",
+      "description": "YYYY-MM-DD"
+    },
+    "periodEnd": {
+      "type": "string",
+      "description": "YYYY-MM-DD"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "open",
+        "paid",
+        "void"
+      ]
+    },
+    "cdnBytes": {
+      "type": "integer"
+    },
+    "p2pBytes": {
+      "type": "integer"
+    },
+    "offloadPercent": {
+      "type": "number"
+    },
+    "egressRateUsdPerGb": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "feeSharePct": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "savingsUsd": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "feeUsd": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "keepUsd": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "peerServedMinutes": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "perMinuteRateUsd": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "disputeStatus": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "open",
+        "resolved",
+        null
+      ]
+    },
+    "disputeReason": {
+      "type": "string"
+    },
+    "disputedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resolvedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resolutionNote": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    },
+    "stripeInvoiceId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "stripeStatus": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hostedInvoiceUrl": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "createdAt": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

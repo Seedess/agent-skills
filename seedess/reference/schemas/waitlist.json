@@ -1,0 +1,42 @@
+{
+  "$id": "https://schemas.seedess.com/waitlist.json",
+  "title": "WaitlistEntry",
+  "type": "object",
+  "required": [
+    "email"
+  ],
+  "properties": {
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "name": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "stack": {
+      "type": "string"
+    },
+    "traffic": {
+      "type": "string"
+    },
+    "spend": {
+      "type": "string"
+    },
+    "drm": {
+      "type": "string"
+    },
+    "utm_source": {
+      "type": "string"
+    },
+    "utm_medium": {
+      "type": "string"
+    },
+    "utm_campaign": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

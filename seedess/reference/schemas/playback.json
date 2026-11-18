@@ -1,0 +1,47 @@
+{
+  "$id": "https://schemas.seedess.com/playback.json",
+  "title": "Playback",
+  "type": "object",
+  "required": [
+    "signaling"
+  ],
+  "properties": {
+    "format": {
+      "type": "string",
+      "enum": [
+        "hls",
+        "dash"
+      ]
+    },
+    "master": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Rewritten HLS master playlist with `h`/`size` on every segment. Null for DASH."
+    },
+    "manifest": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Rewritten DASH MPD. Null for HLS."
+    },
+    "playlist": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Single-variant media playlist, when the source has no master."
+    },
+    "signaling": {
+      "type": "string",
+      "description": "WebSocket room URL. Exchange the path's `https:` for `wss:`."
+    },
+    "config": {
+      "type": "string",
+      "description": "ICE/config endpoint for the browser (`/signaling/config?token=…`)."
+    }
+  },
+  "additionalProperties": false
+}
